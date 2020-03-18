@@ -1,0 +1,59 @@
+### START: EXPERIMENT CONFIGURATION ###
+EXPERIMENT:
+    REPO_URL: "https://github.com/repo"
+    SPRINT_NAME: &sprint_name "sprint-15"                 #ONLY MODIFY THE STRING
+    SPRINT_DIR: &sprint_dir !join [*sprint_name, "-data"] #DO NOT MODIFY
+    EXPERIMENT_NAME: &experiment_name "grid-mp-no-other"  #ONLY MODIFY THE STRING
+    MODEL_NAME: "grid-mp"
+    USER: &user "gkno"
+OUTPUT_DIRS:
+    EXPERIMENT_PATH : &experiment_path !join ["data/",*sprint_dir,"/", *user, "/",*experiment_name] #DO NOT MODIFY
+    MODEL_PATH : !join [*experiment_path, "/model"]             #DO NOT MODIFY
+    IMAGES_PATH : !join [*experiment_path, "/images"]           #DO NOT MODIFY
+    RESULTS_PATH : !join [*experiment_path, "/results"]         #DO NOT MODIFY
+    OTHERS_PATH : !join [*experiment_path, "/others"]           #DO NOT MODIFY
+    CHECKPOINTS_PATH : &checkpoints !join [*experiment_path, "/checkpoints"] #DO NOT MODIFY
+### END: EXPERIMENT CONFIGURATION ###
+RAW_DATA:
+    train_filepath: "data/validated_data/modeling_data/20200204-135319-image-train.csv"
+    valid_filepath: "data/validated_data/modeling_data/20200204-135319-image-valid.csv"
+    test_filepath: "data/validated_data/modeling_data/20200204-135319-image-test.csv"
+    categories_to_remove: ['One', 'Two']
+ModelCheckpoint:
+    filepath: !join [*checkpoints,  "/{epoch:02d}-{val_sparse_categorical_accuracy:.2f}.h5"]
+    monitor: "val_sparse_categorical_accuracy"
+    verbose: 0
+    mode: 'max'
+    save_best_only: True
+ReduceLROnPlateau:
+    monitor: "val_loss"
+    factor: 0.1
+    patience: 2
+    verbose: 0
+    mode: 'auto'
+    min_delta: 0.0001
+    cooldown: 0
+    min_lr: 0
+EarlyStopping:
+    monitor: "val_loss"
+    min_delta: 0
+    patience: 5
+    mode: "auto"
+optimizer:
+    initial_lr: 0.0001
+model_compile:
+    loss: "sparse_categorical_crossentropy"
+    metrics: "sparse_categorical_accuracy"
+train:
+    batch_size: 32
+    epochs: 10
+    image_params: &image_params
+        HEIGH: 224
+        WIDTH: 224
+        CHANNELS: 3
+evaluate:
+    batch_size': 32
+    image_params: *image_params
+test:
+    batch_size': 1
+    image_params: *image_params
